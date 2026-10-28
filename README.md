@@ -3,6 +3,8 @@
 Play chess against LLMs, or watch them play each other, in the browser. Stockfish
 referees every move.
 
+![A live game against Claude Haiku 5.5 playing a pirate](docs/screenshot.png)
+
 The AI gets a deliberately tiny toolset: `make_move`, `write_notes`, `resign` and
 `accept_draw`. Its notebook is its only memory between turns. Stockfish grades
 every move from both sides (best, excellent, good, inaccuracy, mistake, blunder),
