@@ -226,7 +226,8 @@ export class GameSession {
 
   private say(color: Color, text: string) {
     this.chat.push({ color, text, ply: this.moves.length });
-    this.inbox[opposite(color)].push(text);
+    const listener = opposite(color);
+    if (this.players[listener].config.kind === "llm") this.inbox[listener].push(text);
   }
 
   private finish(result: GameResult) {
@@ -342,7 +343,9 @@ export class GameSession {
       if (this.abort.signal.aborted || isStale()) return;
       this.thinking = null;
       this.error = `${this.players[color].label}: ${(err as Error).message}`;
-      this.mind.at(-1)?.entries.push({ kind: "error", text: (err as Error).message });
+      const turn = this.mind.at(-1);
+      if (turn?.color === color && !turn.done)
+        turn.entries.push({ kind: "error", text: (err as Error).message });
       this.emit();
     }
   }

@@ -5,7 +5,7 @@
   "description": "Play chess against LLMs through a tiny tool-calling harness, refereed by Stockfish.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.9"
   },
   "scripts": {
     "dev": "concurrently -k -n server,web -c blue,magenta \"npm:dev:server\" \"npm:dev:web\"",
@@ -28,6 +28,7 @@
     "react-chessboard": "^5.12.1",
     "react-dom": "^19.3.1",
     "stockfish": "^19.0.1",
+    "tsx": "^4.23.15",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
     "@vitejs/plugin-react": "^6.1.2",
     "concurrently": "^10.0.6",
     "prettier": "^3.9.10",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
