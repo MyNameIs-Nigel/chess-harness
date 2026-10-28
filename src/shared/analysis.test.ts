@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { analyzeMove, classify, formatScore, moveAccuracy, summarize, winPercent } from "./analysis";
+import {
+  analyzeMove,
+  classify,
+  formatScore,
+  moveAccuracy,
+  summarize,
+  winPercent,
+} from "./analysis";
 import type { MoveRecord, PositionEval } from "./types";
 
 const evalOf = (whiteWin: number, bestUci = "e2e4"): PositionEval => ({

@@ -103,6 +103,8 @@ export interface PlayerInfo {
 
 export interface GameSnapshot {
   id: string;
+  /** Increments on every change, so clients can drop stale snapshots. */
+  version: number;
   players: Record<Color, PlayerInfo>;
   fen: string;
   turn: Color;

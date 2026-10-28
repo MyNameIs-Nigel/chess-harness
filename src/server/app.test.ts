@@ -65,7 +65,9 @@ describe("HTTP API", () => {
 
     const illegal = await post(`/api/games/${id}/actions`, { type: "move", move: "Qxh9" });
     expect(illegal.status).toBe(400);
-    expect(await illegal.json()).toEqual({ error: expect.stringMatching(/Illegal move|not your turn/) });
+    expect(await illegal.json()).toEqual({
+      error: expect.stringMatching(/Illegal move|not your turn/),
+    });
 
     expect((await post(`/api/games/${id}/actions`, { type: "teleport" })).status).toBe(400);
   });

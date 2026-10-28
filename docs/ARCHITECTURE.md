@@ -23,26 +23,27 @@ Losing to an LLM is rare. The fun is watching one think, scheme and trip up.
 
 ## Stack
 
-| Concern | Choice | Why / alternatives |
-| --- | --- | --- |
-| Rules, SAN/UCI, FEN/PGN | `chess.js` (BSD-2, TypeScript) | `chessops` is stricter and handles variants, but it is GPL and we need neither. |
-| Engine | `stockfish` npm 19 (lite single-threaded WASM, GPL-3), spawned as a child process that speaks UCI | It loads in about 200ms and needs no native install. `STOCKFISH_PATH` swaps in a native binary using the same code. |
-| Board UI | `react-chessboard` v5 (MIT) | `chessground` gives the Lichess look but is GPL and not React. |
-| Server | Hono on Node, with Server-Sent Events | Tiny and typed, and `app.request()` makes routes testable without a socket. |
-| LLM API | OpenRouter `chat/completions` with tools, called with plain `fetch` | One key reaches every model. Any OpenAI-compatible base URL works. |
-| UI / tests | Vite + React 19, Vitest | |
+| Concern                 | Choice                                                                                            | Why / alternatives                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Rules, SAN/UCI, FEN/PGN | `chess.js` (BSD-2, TypeScript)                                                                    | `chessops` is stricter and handles variants, but it is GPL and we need neither.                                     |
+| Engine                  | `stockfish` npm 19 (lite single-threaded WASM, GPL-3), spawned as a child process that speaks UCI | It loads in about 200ms and needs no native install. `STOCKFISH_PATH` swaps in a native binary using the same code. |
+| Board UI                | `react-chessboard` v5 (MIT)                                                                       | `chessground` gives the Lichess look but is GPL and not React.                                                      |
+| Server                  | Hono on Node, with Server-Sent Events                                                             | Tiny and typed, and `app.request()` makes routes testable without a socket.                                         |
+| LLM API                 | OpenRouter `chat/completions` with tools, called with plain `fetch`                               | One key reaches every model. Any OpenAI-compatible base URL works.                                                  |
+| UI / tests              | Vite + React 19, Vitest                                                                           |                                                                                                                     |
 
 ## Layout
 
 ```
 src/
-  shared/      types used by both sides (snapshot, actions, configs)
+  shared/      types, win%/accuracy/badge math, PGN export (used by server and client)
   server/
-    chess/     pure helpers: move parsing, prompt rendering, PGN export
-    engine/    UCI process wrapper, win%/accuracy/classification math
+    chess/     move parsing that tolerates LLM-style input
+    engine/    UCI process wrapper, Stockfish analyzer and player
     llm/       OpenRouter client, model catalog, offline random-mover client
-    agent/     toolset + the per-turn agent loop
+    agent/     prompt, toolset and the per-turn agent loop
     game/      GameSession (state machine + orchestration), in-memory store
+    test/      fakes: scripted LLM, material-count analyzer
     app.ts     HTTP routes (createApp(deps) for tests)
     index.ts   wiring + static hosting
     arena.ts   headless CLI for running games (LLM vs Stockfish/LLM)
@@ -76,12 +77,12 @@ keeping it is a real decision the model makes.
 
 **Toolset** (deliberately tiny):
 
-| Tool | Args | Ends turn |
-| --- | --- | --- |
-| `make_move` | `move` (SAN or UCI), `say?`, `offer_draw?` | yes, when legal |
-| `write_notes` | `notes` (replaces notebook, capped) | no |
-| `resign` | `say?` | yes |
-| `accept_draw` | `say?`; offered only while the opponent's draw offer is pending | yes |
+| Tool          | Args                                                            | Ends turn       |
+| ------------- | --------------------------------------------------------------- | --------------- |
+| `make_move`   | `move` (SAN or UCI), `say?`, `offer_draw?`                      | yes, when legal |
+| `write_notes` | `notes` (replaces notebook, capped)                             | no              |
+| `resign`      | `say?`                                                          | yes             |
+| `accept_draw` | `say?`; offered only while the opponent's draw offer is pending | yes             |
 
 **Turn budget.** At most 6 model calls per turn. An illegal move returns an
 error that lists the legal moves, so the model can correct itself. A reply with
@@ -121,13 +122,13 @@ Hints for the human reuse the cached analysis and are counted on the scoreboard.
 
 ## HTTP API
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/api/models` | OpenRouter models that support tools, cheapest first, cached 1h. Falls back to a curated list. |
-| POST | `/api/games` | `{ white, black }` player configs; returns a snapshot |
-| GET | `/api/games/:id` | snapshot |
-| GET | `/api/games/:id/stream` | SSE: a snapshot on every change |
-| POST | `/api/games/:id/actions` | `move`, `resign`, `offer_draw`, `accept_draw`, `decline_draw`, `chat`, `hint`, `retry` |
+| Method | Path                     | Purpose                                                                                        |
+| ------ | ------------------------ | ---------------------------------------------------------------------------------------------- |
+| GET    | `/api/models`            | OpenRouter models that support tools, cheapest first, cached 1h. Falls back to a curated list. |
+| POST   | `/api/games`             | `{ white, black }` player configs; returns a snapshot                                          |
+| GET    | `/api/games/:id`         | snapshot                                                                                       |
+| GET    | `/api/games/:id/stream`  | SSE: a snapshot on every change                                                                |
+| POST   | `/api/games/:id/actions` | `move`, `resign`, `offer_draw`, `accept_draw`, `decline_draw`, `chat`, `hint`, `retry`         |
 
 ## Cheap models to try
 

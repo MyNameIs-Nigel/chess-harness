@@ -97,6 +97,7 @@ export class GameSession {
   private thinking: Color | null = null;
   private drawOffer: Color | null = null;
   private error: string | null = null;
+  private version = 0;
 
   constructor(id: string, configs: Record<Color, PlayerConfig>, deps: SessionDeps) {
     this.id = id;
@@ -126,6 +127,7 @@ export class GameSession {
   snapshot(): GameSnapshot {
     return structuredClone({
       id: this.id,
+      version: this.version,
       players: this.players,
       fen: this.chess.fen(),
       turn: this.chess.turn(),
@@ -216,6 +218,7 @@ export class GameSession {
   }
 
   private emit() {
+    this.version++;
     if (!this.listeners.size) return;
     const snap = this.snapshot();
     for (const fn of this.listeners) fn(snap);
