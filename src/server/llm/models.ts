@@ -10,8 +10,32 @@ const offline: ModelInfo = {
   reasoning: false,
 };
 
-/** Cheap tool-capable models worth trying first. Prices are approximate fallbacks. */
+/**
+ * Cheap tool-capable models that played sensibly in live arena runs (Oct 2026).
+ * Prices are fallbacks for when the live catalog is unreachable.
+ */
 const RECOMMENDED: ModelInfo[] = [
+  {
+    id: "anthropic/claude-haiku-5.5",
+    name: "Anthropic: Claude Haiku 5.5",
+    promptPrice: 0.1,
+    completionPrice: 0.5,
+    reasoning: true,
+  },
+  {
+    id: "openai/gpt-6-luna",
+    name: "OpenAI: GPT-6 Luna",
+    promptPrice: 0.1,
+    completionPrice: 0.5,
+    reasoning: true,
+  },
+  {
+    id: "deepseek/deepseek-v4.1-flash",
+    name: "DeepSeek: V4.1 Flash",
+    promptPrice: 0.14,
+    completionPrice: 0.42,
+    reasoning: true,
+  },
   {
     id: "google/gemini-2.5-flash-lite",
     name: "Google: Gemini 2.5 Flash Lite",
@@ -20,39 +44,18 @@ const RECOMMENDED: ModelInfo[] = [
     reasoning: true,
   },
   {
-    id: "openai/gpt-4.1-nano",
-    name: "OpenAI: GPT-4.1 Nano",
-    promptPrice: 0.1,
-    completionPrice: 0.4,
+    id: "qwen/qwen3.7-flash",
+    name: "Qwen: Qwen3.7 Flash",
+    promptPrice: 0.03,
+    completionPrice: 0.13,
+    reasoning: true,
+  },
+  {
+    id: "mistralai/mistral-small-3.2-24b-instruct",
+    name: "Mistral: Mistral Small 3.2 24B",
+    promptPrice: 0.075,
+    completionPrice: 0.2,
     reasoning: false,
-  },
-  {
-    id: "openai/gpt-5-nano",
-    name: "OpenAI: GPT-5 Nano",
-    promptPrice: 0.05,
-    completionPrice: 0.4,
-    reasoning: true,
-  },
-  {
-    id: "x-ai/grok-4-fast",
-    name: "xAI: Grok 4 Fast",
-    promptPrice: 0.2,
-    completionPrice: 0.5,
-    reasoning: true,
-  },
-  {
-    id: "deepseek/deepseek-chat-v3.1",
-    name: "DeepSeek: V3.1",
-    promptPrice: 0.2,
-    completionPrice: 0.8,
-    reasoning: true,
-  },
-  {
-    id: "openai/gpt-5-mini",
-    name: "OpenAI: GPT-5 Mini",
-    promptPrice: 0.25,
-    completionPrice: 2,
-    reasoning: true,
   },
 ];
 export const RECOMMENDED_IDS = RECOMMENDED.map((m) => m.id);
@@ -68,19 +71,22 @@ const perMillion = (perToken: string | undefined) =>
   Number((Number(perToken ?? NaN) * 1e6).toPrecision(6));
 
 export function parseModels(data: { data?: WireModel[] }): ModelInfo[] {
-  return (data.data ?? [])
-    .filter((m) => m.supported_parameters?.includes("tools"))
-    .map((m) => ({
-      id: m.id,
-      name: m.name ?? m.id,
-      promptPrice: perMillion(m.pricing?.prompt),
-      completionPrice: perMillion(m.pricing?.completion),
-      reasoning: m.supported_parameters?.includes("reasoning") ?? false,
-    }))
-    .filter((m) => m.promptPrice >= 0 && m.completionPrice >= 0)
-    .sort(
-      (a, b) => a.promptPrice * 5 + a.completionPrice - (b.promptPrice * 5 + b.completionPrice),
-    );
+  return (
+    (data.data ?? [])
+      // ":batch" variants are rejected by chat/completions.
+      .filter((m) => m.supported_parameters?.includes("tools") && !m.id.endsWith(":batch"))
+      .map((m) => ({
+        id: m.id,
+        name: m.name ?? m.id,
+        promptPrice: perMillion(m.pricing?.prompt),
+        completionPrice: perMillion(m.pricing?.completion),
+        reasoning: m.supported_parameters?.includes("reasoning") ?? false,
+      }))
+      .filter((m) => m.promptPrice >= 0 && m.completionPrice >= 0)
+      .sort(
+        (a, b) => a.promptPrice * 5 + a.completionPrice - (b.promptPrice * 5 + b.completionPrice),
+      )
+  );
 }
 
 /** Live OpenRouter catalog (cached), falling back to the built-in list when offline. */

@@ -10,6 +10,8 @@ export interface TurnContext {
   notes: string;
   /** Chat from the opponent since this side last moved. */
   opponentMessages: string[];
+  /** This side's own latest chat line, so it doesn't repeat itself. */
+  lastSaid?: string;
   drawOffered: boolean;
   opponentLabel: string;
   persona: PersonaId;
@@ -23,7 +25,7 @@ export function systemPrompt(ctx: Pick<TurnContext, "color" | "opponentLabel" | 
 ${PERSONAS[ctx.persona].style} Your persona only changes how you talk: always play the strongest chess you can.
 
 How this works:
-- Each turn you are shown the position, the move history and your private notebook. You remember nothing else between turns, so use write_notes to keep plans and observations (max ${NOTES_LIMIT} characters, it replaces the old notes).
+- Each turn you see the position, the move history and your private notebook, and nothing else from earlier turns. The notebook is your only memory: whenever your plan or assessment changes, call write_notes in the same response as make_move (max ${NOTES_LIMIT} characters, replaces the old notes).
 - End your turn with make_move, resign or accept_draw. Moves are SAN (Nf3, exd5, O-O, e8=Q) or UCI (g1f3).
 - Illegal moves are rejected and you may retry, but repeated failures make the harness play a random move for you.
 - \`say\` is shown to your opponent. Keep it under 25 words.
@@ -59,6 +61,7 @@ export function turnPrompt(ctx: TurnContext): string {
     lines.push(`${them} offers a draw. Call accept_draw to accept, or make a move to decline.`);
   }
   for (const msg of ctx.opponentMessages) lines.push(`${them} says: "${msg}"`);
+  if (ctx.lastSaid) lines.push(`You last said: "${ctx.lastSaid}" (say something new).`);
   lines.push(
     "",
     "Board (White at the bottom, uppercase = White):",
@@ -69,6 +72,10 @@ export function turnPrompt(ctx: TurnContext): string {
     `Moves so far: ${moveList(ctx.history)}`,
   );
   if (ctx.showLegalMoves) lines.push(`Your legal moves: ${chess.moves().join(" ")}`);
-  lines.push("", "Your notebook:", ctx.notes.trim() || "(empty)");
+  lines.push(
+    "",
+    "Your notebook:",
+    ctx.notes.trim() || "(empty: write down your plan with write_notes)",
+  );
   return lines.join("\n");
 }

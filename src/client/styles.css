@@ -448,39 +448,24 @@ select:focus {
 }
 
 .bubble {
-  position: absolute;
-  z-index: 5;
-  left: 48px;
-  bottom: calc(100% + 8px);
-  max-width: min(420px, 85%);
-  padding: 8px 12px;
-  border-radius: 12px;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  margin-left: 8px;
+  padding: 5px 10px;
+  border-radius: 10px;
   background: #f4f1ff;
   color: #1b1830;
+  font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   animation:
     pop 0.25s ease-out,
-    fade 1s ease-in 9s forwards;
-  pointer-events: none;
-}
-.bubble::after {
-  content: "";
-  position: absolute;
-  left: 18px;
-  top: 100%;
-  border: 8px solid transparent;
-  border-top-color: #f4f1ff;
-}
-.board-col > .playerbar:first-child .bubble {
-  bottom: auto;
-  top: calc(100% + 8px);
-}
-.board-col > .playerbar:first-child .bubble::after {
-  top: auto;
-  bottom: 100%;
-  border-top-color: transparent;
-  border-bottom-color: #f4f1ff;
+    fade 1s ease-in 12s forwards;
 }
 @keyframes pop {
   from {

@@ -112,6 +112,24 @@ describe("OpenRouterClient", () => {
     await expect(client(hidden.fn).complete(req)).rejects.toThrow("Provider returned error");
   });
 
+  it("times out a call that never answers, without retrying", async () => {
+    let calls = 0;
+    const hang = (async (_url: string, init: RequestInit) => {
+      calls++;
+      return new Promise((_, reject) =>
+        init.signal!.addEventListener("abort", () => reject(init.signal!.reason)),
+      );
+    }) as unknown as typeof fetch;
+    const slow = new OpenRouterClient({
+      apiKey: "k",
+      fetch: hang,
+      timeoutMs: 20,
+      retryDelaysMs: [1],
+    });
+    await expect(slow.complete(req)).rejects.toThrow("no reply after 0.02s");
+    expect(calls).toBe(1);
+  });
+
   it("fails fast without an API key", async () => {
     const { fn, calls } = fakeFetch(ok());
     await expect(

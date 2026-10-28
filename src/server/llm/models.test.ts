@@ -16,6 +16,11 @@ const wire = {
       supported_parameters: ["tools", "reasoning"],
     },
     {
+      id: "cheap/small:batch",
+      pricing: { prompt: "0.00000005", completion: "0.0000002" },
+      supported_parameters: ["tools"],
+    },
+    {
       id: "no/tools",
       pricing: { prompt: "0", completion: "0" },
       supported_parameters: ["temperature"],
@@ -29,7 +34,7 @@ const wire = {
 };
 
 describe("parseModels", () => {
-  it("keeps priced tool-capable models, cheapest first, in $/M tokens", () => {
+  it("keeps priced chat models with tools, cheapest first, in $/M tokens", () => {
     const models = parseModels(wire);
     expect(models.map((m) => m.id)).toEqual(["cheap/small", "pricey/big"]);
     expect(models[0]).toMatchObject({ promptPrice: 0.1, completionPrice: 0.4, reasoning: true });

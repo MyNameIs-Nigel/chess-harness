@@ -368,6 +368,7 @@ export class GameSession {
         history: this.moves.map((m) => m.san),
         notes: this.notes[color],
         opponentMessages: messages,
+        lastSaid: this.chat.findLast((m) => m.color === color)?.text,
         drawOffered: offerSeen,
         opponentLabel: describeForPrompt(this.players[opposite(color)].config),
         persona: config.persona,

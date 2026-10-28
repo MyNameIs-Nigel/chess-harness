@@ -71,6 +71,11 @@ const final = await new Promise<GameSnapshot>((resolve) => {
         const key = `${turn.ply}:${i}`;
         if (seenEntries.has(key)) return;
         seenEntries.add(key);
+        if (e.kind === "tool" && e.ok && e.name === "write_notes") {
+          console.log(
+            `      📓 ${(JSON.parse(e.args) as { notes: string }).notes.replace(/\s+/g, " ").slice(0, 140)}`,
+          );
+        }
         if (e.kind === "tool" && !e.ok)
           console.log(`      ✗ ${e.name} ${e.args} → ${e.result.slice(0, 80)}`);
         if (e.kind === "fallback" || e.kind === "error") console.log(`      ! ${e.text}`);

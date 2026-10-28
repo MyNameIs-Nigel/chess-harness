@@ -13,6 +13,8 @@ export interface OpenRouterOptions {
   /** Delays between retries of retryable failures (429, 5xx, network). */
   retryDelaysMs?: number[];
   maxTokens?: number;
+  /** Give up on a single call after this long (slow reasoning models can stall a game). */
+  timeoutMs?: number;
 }
 
 interface WireResponse {
@@ -69,7 +71,10 @@ export class OpenRouterClient implements LlmClient {
       usage: { include: true },
       ...(req.reasoning && { reasoning: { effort: req.reasoning } }),
     };
+    const timeoutMs = this.opts.timeoutMs ?? 180_000;
+    const timeout = AbortSignal.timeout(timeoutMs);
     let res: Response;
+    let text: string;
     try {
       res = await this.fetch(`${this.baseUrl}/chat/completions`, {
         method: "POST",
@@ -80,14 +85,15 @@ export class OpenRouterClient implements LlmClient {
           "X-Title": "LLM Chess Harness",
         },
         body: JSON.stringify(body),
-        signal: req.signal,
+        signal: req.signal ? AbortSignal.any([req.signal, timeout]) : timeout,
       });
+      text = await res.text();
     } catch (err) {
       if (req.signal?.aborted) throw err;
+      if (timeout.aborted) throw new LlmError(`${req.model}: no reply after ${timeoutMs / 1000}s`);
       throw new LlmError(`Network error: ${(err as Error).message}`, true);
     }
 
-    const text = await res.text();
     let data: WireResponse;
     try {
       data = JSON.parse(text) as WireResponse;

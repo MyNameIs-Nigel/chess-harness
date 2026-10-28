@@ -42,9 +42,9 @@ npm run build && npm start  # http://localhost:8787
 Run games from the terminal to smoke-test models or compare them:
 
 ```bash
-npm run arena -- --white google/gemini-2.5-flash-lite --black stockfish:0 --max-plies 60
-npm run arena -- --white openai/gpt-5-nano --black x-ai/grok-4-fast --reasoning low
-npm run arena -- --white openai/gpt-4.1-nano --black stockfish:2 --no-legal --persona pirate
+npm run arena -- --white anthropic/claude-haiku-5.5 --black stockfish:1 --max-plies 60
+npm run arena -- --white openai/gpt-6-luna --black deepseek/deepseek-v4.1-flash
+npm run arena -- --white google/gemini-2.5-flash-lite --black stockfish:0 --no-legal --persona pirate
 ```
 
 Each move prints with its badge and eval, along with illegal attempts and chat.
@@ -66,8 +66,11 @@ npm run format
 | `ANALYSIS_DEPTH`      | `14`                           | Depth of the referee's search               |
 | `PORT`                | `8787`                         | API port (Vite proxies `/api` to it in dev) |
 
+Behind an HTTP proxy? Node's `fetch` ignores `HTTPS_PROXY` unless you set
+`NODE_USE_ENV_PROXY=1` (Node 22.21+).
+
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) covers how the harness, game loop
-and analysis fit together.
+and analysis fit together, and which cheap models played well in live tests.
 
 ## License note
 

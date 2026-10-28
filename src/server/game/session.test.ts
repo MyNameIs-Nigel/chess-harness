@@ -66,6 +66,17 @@ describe("GameSession: human vs LLM", () => {
     expect(bot.prompt(1)).not.toContain("prepare to lose");
   });
 
+  it("reminds the LLM of its own last line so the banter stays fresh", async () => {
+    const bot = new ScriptedLlm([move("e5", { say: "Arr, nice try" }), move("Nc6")]);
+    const g = game({ w: human, b: llm }, { llm: bot });
+    await g.act({ type: "move", move: "e4" });
+    await waitFor(g, plies(2));
+    await g.act({ type: "move", move: "Nf3" });
+    await waitFor(g, plies(4));
+    expect(bot.prompt(0)).not.toContain("You last said");
+    expect(bot.prompt(1)).toContain('You last said: "Arr, nice try"');
+  });
+
   it("rejects illegal, out-of-turn and post-game actions", async () => {
     const g = game({ w: human, b: llm }, { llm: new ScriptedLlm([move("e5")], 50) });
     await expect(g.act({ type: "move", move: "e5" })).rejects.toThrow("Illegal move");

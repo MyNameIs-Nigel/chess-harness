@@ -24,7 +24,7 @@ interface Seat {
 }
 
 const STORAGE_KEY = "chess-harness:setup";
-const DEFAULT_MODEL = "google/gemini-2.5-flash-lite";
+const DEFAULT_MODEL = "anthropic/claude-haiku-5.5";
 
 const defaultSeat = (kind: Kind): Seat => ({
   kind,

@@ -132,17 +132,23 @@ Hints for the human reuse the cached analysis and are counted on the scoreboard.
 
 ## Cheap models to try
 
-Prices change, so `/api/models` shows live ones. Good starters with tool
-support, all well under $1 per million input tokens:
+`/api/models` lists the live, priced, tool-capable OpenRouter models, cheapest
+first. These were tested live in October 2026, each playing 6–8 moves against
+Stockfish level 1:
 
-- `google/gemini-2.5-flash-lite`: fast, follows tool instructions well.
-- `openai/gpt-4.1-nano`: cheapest well-known option, weakest at chess.
-- `openai/gpt-5-nano`: a reasoning model, slower but plays better. Use low effort.
-- `deepseek/deepseek-chat-v3.1` or newer DeepSeek: strong for the price.
-- `x-ai/grok-4-fast`: fast, cheap, decent tool use.
+| Model                                      | $/M in/out   | Accuracy | Cost per move | Notes                                          |
+| ------------------------------------------ | ------------ | -------- | ------------- | ---------------------------------------------- |
+| `anthropic/claude-haiku-5.5`               | 0.10 / 0.50  | 82–99%   | ~$0.0004      | Best banter, writes useful notes. The default. |
+| `openai/gpt-6-luna`                        | 0.10 / 0.50  | 89–98%   | ~$0.0002      | Cheap, solid, fast.                            |
+| `deepseek/deepseek-v4.1-flash`             | 0.14 / 0.42  | 99%      | ~$0.0018      | Strongest play, spends reasoning tokens.       |
+| `google/gemini-2.5-flash-lite`             | 0.10 / 0.40  | 73%      | ~$0.0002      | Fun, and hallucinates captures.                |
+| `qwen/qwen3.7-flash`                       | 0.03 / 0.13  | 82%      | ~$0.0003      | Very cheap, uses lots of emoji.                |
+| `mistralai/mistral-small-3.2-24b-instruct` | 0.075 / 0.20 | 78%      | ~$0.0001      | Cheapest, and repeats itself.                  |
 
-A full game costs roughly 40 turns × ~1.5k tokens, which is a fraction of a cent
-on these models. Reasoning models cost several times more.
+Avoid `openai/gpt-5-nano` for live play: it took minutes per move. Some models
+(for example `meta/muse-spark-*`) are blocked by OpenRouter account data
+policies, and the error surfaces in the game with a Retry button. A full game
+costs a cent or two on the models above.
 
 ## Not built (yet)
 

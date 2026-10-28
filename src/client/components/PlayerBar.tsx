@@ -46,6 +46,11 @@ export function PlayerBar({ color, info, stats, toMove, thinking, captured, bubb
           {captured.lead > 0 && <span className="lead">+{captured.lead}</span>}
         </span>
       </div>
+      {bubble && (
+        <div key={`${bubble.ply}-${bubble.text}`} className="bubble" title={bubble.text}>
+          {bubble.text}
+        </div>
+      )}
       {thinking && (
         <span className="thinking">
           <span className="dots" /> thinking {seconds}s
@@ -73,11 +78,6 @@ export function PlayerBar({ color, info, stats, toMove, thinking, captured, bubb
           </span>
         )}
       </div>
-      {bubble && (
-        <div key={`${bubble.ply}-${bubble.text}`} className="bubble">
-          {bubble.text}
-        </div>
-      )}
     </div>
   );
 }

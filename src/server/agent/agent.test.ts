@@ -165,7 +165,7 @@ describe("turnPrompt", () => {
     expect(text).toContain("FEN: rnbqkbnr/pppp1ppp");
     expect(text).toContain("White pieces: Ke1 Qd1 Ra1 Rh1");
     expect(text).toContain("Moves so far: 1. e4 e5");
-    expect(text).toContain("(empty)");
+    expect(text).toContain("(empty: write down your plan");
     expect(text).not.toContain("legal moves");
   });
 
